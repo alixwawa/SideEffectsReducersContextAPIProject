@@ -5,6 +5,7 @@ import CartContext from './cart-context';
 const ACTIONS = {
 	ADD: 'ADD',
 	REMOVE: 'REMOVE',
+	CLEAR: 'CLEAR',
 };
 
 const defaultCartState = {
@@ -38,29 +39,33 @@ const cartReducer = (state, action) => {
 			items: updatedItems,
 			totalAmount: updatedTotalAmount,
 		};
-    }
+	}
 
-    if (action.type === ACTIONS.REMOVE) {
-        const existingCartItemIndex = state.items.findIndex(
-            (item) => item.id === action.id,
-            );
-            const existingItem = state.items[existingCartItemIndex]
-        const updatedTotalAmount = state.totalAmount - existingItem.price
-        let updatedItems;
-        if (existingItem.amount === 1) {
-            updatedItems = state.items.filter(item => item.id !== action.id);
-        } else {
-            const updatedItem = { ...existingItem, amount: existingItem.amount - 1 }
-            updatedItems = [...state.items];
-            updatedItems[existingCartItemIndex] = updatedItem;
-        }
+	if (action.type === ACTIONS.REMOVE) {
+		const existingCartItemIndex = state.items.findIndex(
+			(item) => item.id === action.id,
+		);
+		const existingItem = state.items[existingCartItemIndex];
+		const updatedTotalAmount = state.totalAmount - existingItem.price;
+		let updatedItems;
+		if (existingItem.amount === 1) {
+			updatedItems = state.items.filter((item) => item.id !== action.id);
+		} else {
+			const updatedItem = { ...existingItem, amount: existingItem.amount - 1 };
+			updatedItems = [...state.items];
+			updatedItems[existingCartItemIndex] = updatedItem;
+		}
 
-        return {
-            items: updatedItems,
-            totalAmount: updatedTotalAmount
-        }
-    }
-    return defaultCartState
+		return {
+			items: updatedItems,
+			totalAmount: updatedTotalAmount,
+		};
+	}
+
+	if (action.type === 'CLEAR') {
+		return defaultCartState;
+	}
+	return defaultCartState;
 };
 
 const CartProvider = (props) => {
@@ -77,11 +82,16 @@ const CartProvider = (props) => {
 		dispatchCartAction({ type: ACTIONS.REMOVE, id: id });
 	};
 
+	const clearCartHandler = () => {
+		dispatchCartAction({ type: ACTIONS.CLEAR });
+	};
+
 	const cartContext = {
 		items: cartState.items,
 		totalAmount: cartState.totalAmount,
 		addItem: addItemToCartHandler,
 		removeItem: removeItemFromCartHandler,
+		clearCart: clearCartHandler,
 	};
 
 	return (
